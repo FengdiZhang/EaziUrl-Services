@@ -3,48 +3,53 @@ import random
 import string
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from .models import URLMapping
+from django.db import transaction
 
 app = FastAPI()
 
 class Shortener:
     def __init__(self):
-        self.base = "http://faye.com/"
+        self.base = "http://eaziurl.com/"
         self.chars = string.ascii_letters + string.digits
-        self.long_to_short = {}
-        self.short_to_long = {}
 
     def _generate_short_key(self):
         return ''.join(random.choice(self.chars) for _ in range(6))
 
     def encode(self, longUrl: str) -> str:
-        if longUrl in self.long_to_short:
-            return self.base + self.long_to_short[longUrl]
+        with transaction.atomic():
+            # Check if the long URL already exists
+            mapping = URLMapping.objects.filter(long_url=longUrl).first()
+            if mapping:
+                return self.base + mapping.short_url
 
-        while True:
-            short_key = self._generate_short_key()
-            if short_key not in self.short_to_long:
-                break
+            # make sure generated short key is unique
+            while True:
+                short_key = self._generate_short_key()
+                if not URLMapping.objects.filter(short_url=short_key).exists():
+                    break
 
-        self.long_to_short[longUrl] = short_key
-        self.short_to_long[short_key] = longUrl
+            # Save to the database
+            mapping = URLMapping(long_url=longUrl, short_url=short_key)
+            mapping.save()
 
         return self.base + short_key
 
     def decode(self, shortUrl: str) -> str:
         short_key = shortUrl.replace(self.base, "")
-        return self.short_to_long.get(short_key, "")
+        mapping = URLMapping.objects.filter(short_url=short_key).first()
+        if mapping:
+            return mapping.long_url
+        return ""
 
 shortener = Shortener()
 
-# → schemas.py later
 class URLItem(BaseModel):
     url: str
 
 @app.post("/encode")
 def encode_url(item: URLItem):
     short_url = shortener.encode(item.url)
-
-    # print("short_url", short_url)
     return {"short_url": short_url}
 
 @app.get("/decode")
@@ -52,10 +57,4 @@ def decode_url(short_url: str):
     long_url = shortener.decode(short_url)
     if not long_url:
         raise HTTPException(status_code=404, detail="URL not found")
-
-    # print("long_url", long_url)
     return {"long_url": long_url}
-
-@app.get("/hello")
-def hello():
-    return {"message": "Hello from FastAPI"}
