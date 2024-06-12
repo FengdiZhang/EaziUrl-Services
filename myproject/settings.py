@@ -8,9 +8,13 @@ SECRET_KEY = 'django-insecure-23bm!a9r0!c=&h015*xq*o%6&s$#a+3)a)if!rucaik0k2+8qt
 DEBUG = True
 
 PROJECT_NAME = "My Project"
-ALLOWED_HOSTS = ["*"]  # 在生产环境中应设置为具体的主机名
+ALLOWED_HOSTS = ["*"]
+
+ASGI_APPLICATION = 'myproject.asgi.application'
+WSGI_APPLICATION = 'myproject.wsgi.application'
 
 INSTALLED_APPS = [
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -24,6 +28,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -46,8 +51,6 @@ TEMPLATES = [
         },
     }
 ]
-
-WSGI_APPLICATION = 'myproject.wsgi.application'
 
 DATABASES = {
     'default': {
