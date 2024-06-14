@@ -1,4 +1,4 @@
-#models.py
+#✅models.py
 from django.db import models
 
 class URLMapping(models.Model):
@@ -9,6 +9,5 @@ class URLMapping(models.Model):
 
     def __str__(self):
         return self.short_url
-
 
 

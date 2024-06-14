@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+api/__pycache__/
+myproject/__pycache__/
+
+
 # C extensions
 *.so
 
@@ -149,4 +153,8 @@ staticfiles/
 
 # Operating system files
 .DS_Store
+.idea
 Thumbs.db
+db.sqlite3
+dump.rdb
+templates/
