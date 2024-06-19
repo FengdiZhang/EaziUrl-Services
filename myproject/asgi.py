@@ -11,6 +11,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myproject.settings")
 django.setup()
 
 from api.endpoints import app as fastapi_app
+from api.auth_endpoints import app as auth_app
 
 # 获取 Django 的 ASGI 应用
 django_asgi_app = get_asgi_application()
@@ -29,6 +30,7 @@ def get_application() -> FastAPI:
     app.mount("/django", WSGIMiddleware(django_asgi_app))
     app.mount("/api", fastapi_app)
     app.mount("/static", StaticFiles(directory="staticfiles"), name="static")
+    app.mount("/auth", auth_app)
 
     return app
 
