@@ -1,8 +1,9 @@
 import random
 import string
+from typing import List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from .models import URLMapping
+from .models import URLMapping, URLMappingSchema
 from django.db import transaction
 from fastapi.responses import RedirectResponse
 from django.core.cache import cache
@@ -70,7 +71,11 @@ class URLItem(BaseModel):
 @app.get("/test")
 async def read_test():
     return {"message": "⭐️This is a test endpoint"}
-
+# get all links
+@app.get("/links", response_model=List[URLMappingSchema])
+def get_all_links():
+    links = URLMapping.objects.all()
+    return [URLMappingSchema.from_orm(link) for link in links]
 
 @app.post("/encode")
 def encode_url(item: URLItem):
@@ -81,9 +86,18 @@ def encode_url(item: URLItem):
         "title": item.title
     }
 
-
 @app.get("/{short_key}")
 def redirect_url(short_key: str):
     cache_key = f"short:{short_key}"
     cached_long_url = cache.get(cache_key)
+    if cached_long_url:
+        return RedirectResponse(url=cached_long_url)
+
+    mapping = URLMapping.objects.filter(short_url=short_key).first()
+    if mapping:
+        long_url = mapping.long_url
+        cache.set(cache_key, long_url)
+        return RedirectResponse(url=long_url)
+    else:
+        raise HTTPException(status_code=404, detail="URL not found")
 

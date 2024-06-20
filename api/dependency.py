@@ -2,9 +2,10 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
 from .auth import decode_access_token
-from .models import TokenData, User
+from .models import TokenData, User, CustomUser
+from asgiref.sync import sync_to_async
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
@@ -13,10 +14,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        token_data = TokenData.from_json(token)
+        payload = decode_access_token(token)
+        username = payload.username
     except JWTError:
         raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
+    user = await sync_to_async(CustomUser.objects.get)(username=username)
     if user is None:
         raise credentials_exception
     return user
