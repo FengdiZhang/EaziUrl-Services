@@ -14,7 +14,7 @@ app = FastAPI()
 class Shortener:
     def __init__(self):
         self.real_base = "http://127.0.0.1:8000/api/"  # The actual URL prefix
-        self.display_base = "http://eaziurl.fz/"  # The display URL prefix
+        # self.display_base = "http://eaziurl.fz/"
         self.chars = string.ascii_letters + string.digits
 
     def _generate_short_key(self):
@@ -35,7 +35,7 @@ class Shortener:
             if mapping:
                 short_urls = {
                     "real_url": self.real_base + mapping.short_url,
-                    "display_url": self.display_base + mapping.short_url
+                    # "display_url": self.display_base + mapping.short_url
                 }
                 # 3️⃣Cache the result
                 cache.set(cache_key, short_urls)
@@ -53,7 +53,7 @@ class Shortener:
 
             short_urls = {
                 "real_url": self.real_base + short_key,
-                "display_url": self.display_base + short_key
+                # "display_url": self.display_base + short_key
             }
             #✅ Cache the result
             cache.set(cache_key, short_urls)
@@ -82,7 +82,7 @@ def encode_url(item: URLItem):
     short_urls = shortener.encode(item.url, item.title)
     return {
         "real_url": short_urls["real_url"],
-        "display_url": short_urls["display_url"],
+        # "display_url": short_urls["display_url"],
         "title": item.title
     }
 
