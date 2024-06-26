@@ -2,6 +2,9 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import timedelta
 from typing import Optional
+
+from jose import JWTError
+
 from .models import CustomUser, Token, TokenData, User, UserInDB, UserCreate
 from django.db import transaction
 from asgiref.sync import sync_to_async
