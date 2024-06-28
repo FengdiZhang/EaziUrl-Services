@@ -42,7 +42,7 @@ def decode_access_token(token: str):
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-        token_data = TokenData(username=username)
+        return payload
     except JWTError:
         raise credentials_exception
-    return token_data
+

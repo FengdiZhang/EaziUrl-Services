@@ -11,6 +11,7 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
+
 # table2️⃣
 class URLMapping(models.Model):
     long_url = models.URLField()
@@ -45,13 +46,17 @@ class UserCreate(BaseModel):
     password: str
     email: EmailStr
 
-class User(BaseModel):
+class UserSchema(BaseModel):
+    id: int
     username: str
     email: str
     full_name: str | None = None
     disabled: bool | None = None
 
-class UserInDB(User):
+    class Config:
+        orm_mode = True
+
+class UserInDB(UserSchema):
     hashed_password: str
 
 class Token(BaseModel):
